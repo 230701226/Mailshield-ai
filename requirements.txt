@@ -1,0 +1,12 @@
+streamlit
+fastapi
+uvicorn
+scikit-learn
+pandas
+textstat
+joblib
+beautifulsoup4
+tldextract
+transformers
+torch
+python-multipart
