@@ -1,0 +1,5 @@
+def test_model_and_vectorizer_load():
+    import joblib
+    model = joblib.load("models/isolation_forest_model.pkl")
+    vectorizer = joblib.load("models/tfidf_vectorizer.pkl")
+    assert model is not None and vectorizer is not None
