@@ -1,0 +1,7 @@
+{
+  "subject": "Your Amazon account is suspended",
+  "body": "Click here to verify your identity or your account will be blocked.",
+  "from_email": "support@amaz0n.com",
+  "to_email": "employee@company.com",
+  "reply_to_email": "verify@amaz0n-secure.com"
+}
