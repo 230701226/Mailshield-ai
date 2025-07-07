@@ -1,0 +1,14 @@
+[
+  {
+    "subject": "Your Amazon account is suspended",
+    "body": "Click here to verify your identity now!",
+    "from_email": "alert@amaz0n.com",
+    "to_email": "employee@company.com"
+  },
+  {
+    "subject": "Weekly Team Meeting",
+    "body": "Please join the Zoom link below for our regular meeting.",
+    "from_email": "hr@company.com",
+    "to_email": "employee@company.com"
+  }
+]
