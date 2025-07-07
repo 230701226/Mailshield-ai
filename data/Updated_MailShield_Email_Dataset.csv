@@ -1,0 +1,61 @@
+subject,body,from_email,to_email,label
+Project update,The report will be submitted by Friday. Let me know if revisions are needed.,alice@company.com,bob@company.com,ham
+Team lunch,We are planning a lunch for the team next Wednesday. RSVP soon!,hr@company.com,all@company.com,ham
+Meeting rescheduled,The client meeting has been moved to 3 PM tomorrow. Please update your calendar.,admin@company.com,team@company.com,ham
+Internal audit notice,The finance department will conduct an internal audit next week.,finance@company.com,employees@company.com,ham
+Weekly newsletter,Check out this week’s updates and team highlights!,newsletter@company.com,staff@company.com,ham
+Request for information,Can you provide the updated product specs for Q3?,sales@company.com,product@company.com,ham
+New HR policy,Please review the attached document outlining our new leave policy.,hr@company.com,employees@company.com,ham
+Feedback on presentation,Great job on the deck. Just add one more chart on slide 6.,manager@company.com,john@company.com,ham
+Security training,Complete your mandatory security training by Friday using the link provided.,it@company.com,team@company.com,ham
+Product release,Our latest release is now live. Thanks to everyone who contributed!,product@company.com,team@company.com,ham
+Your account has been compromised,Immediate action required. Click the link to reset your password.,security@fake-bank.com,user@company.com,phishing
+Payment failed,Your recent transaction was declined. Log in to resolve the issue.,billing@paypal-secure.com,user@company.com,phishing
+Unusual login attempt,We detected a login attempt from an unknown device. Verify now.,support@secure-alert.com,user@company.com,phishing
+Urgent: Account suspended,Your email account is suspended. Reactivate it by clicking this link.,admin@recovery-center.com,user@company.com,phishing
+You've won a prize!,Congratulations! You’ve won a $500 Amazon gift card. Claim now!,prizes@claim-now.net,user@company.com,phishing
+Confirm your billing info,Update your billing information to avoid service interruption.,billing@netflix-update.com,user@company.com,phishing
+Verify your identity,Verify your identity by uploading your ID through our secure portal.,identity@check-now.info,user@company.com,phishing
+Delivery failure notice,Your package could not be delivered. Reconfirm address here.,shipping@courier-alert.com,user@company.com,phishing
+Unclaimed tax refund,You are eligible for a tax refund. Submit your details to receive it.,taxdept@refunds-irs.com,user@company.com,phishing
+Restricted content alert,You accessed restricted content. Your account is flagged.,admin@compliance-checker.com,user@company.com,phishing
+Quarterly Financial Review and Planning,"Dear Team,
+
+As we approach the end of Q2, I wanted to share a brief overview of our financial performance so far. Revenue has increased by 12% compared to the previous quarter, largely due to improved sales conversions and customer retention. Please review the attached Excel sheet outlining department-wise breakdowns. I’d like to schedule a review meeting next Wednesday to discuss cost optimization strategies for the upcoming quarter.
+
+Best,
+CFO",finance@company.com,board@company.com,ham
+Reminder: Team Training on Cybersecurity Compliance,"Hi All,
+
+This is a reminder that all employees must complete the annual cybersecurity compliance training by July 15. The training portal has been updated with the latest modules on phishing detection, password safety, and secure remote work practices. Once completed, please upload your certificates to the internal compliance dashboard. Failure to complete the training may result in temporary access suspension as per company policy.
+
+Regards,
+IT Department",it@company.com,team@company.com,ham
+Immediate Attention Required: Suspicious Login Detected,"Dear User,
+
+We have detected a suspicious login attempt from a new device in Lagos, Nigeria using your credentials. If this was not you, please secure your account immediately by following the link below:
+
+https://secure-verify-alerts.com/login
+
+Failure to verify your account within 24 hours will result in account suspension for security reasons.
+
+Stay safe,
+Security Team",alert@security-checker.com,user@company.com,phishing
+Urgent Billing Issue: Update Your Information Now,"Hello,
+
+We were unable to process your most recent payment due to an expired card on file. To avoid service disruption, please update your billing information immediately at the secure link below:
+
+http://netflix-bill-center.com/update-card
+
+If you believe this message was sent in error, please disregard it. However, delays may result in subscription suspension.
+
+Thank you,
+Billing Support",support@netflix-bill-center.com,user@company.com,phishing
+Follow-up on Sprint Planning and Feature Prioritization,"Hi Engineering Team,
+
+Thanks for your input in this morning’s sprint planning session. As discussed, we’ll prioritize resolving the UI responsiveness bug and implementing API caching for the analytics module. The updated sprint board reflects these changes. Please ensure story points are updated by EOD today.
+
+Also, I’ll be conducting 1:1 sync-ups on Thursday to review progress on critical blockers.
+
+Cheers,
+Product Manager",pm@company.com,engg@company.com,ham
