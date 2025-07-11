@@ -9,6 +9,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.compose import ColumnTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
+from custom_features import TextLengthExtractor, LinkCountExtractor
+
 
 DATA_PATH = 'data/Updated_MailShield_Email_Dataset.csv'
 MODEL_PATH = 'models/isolation_forest_model.pkl'
