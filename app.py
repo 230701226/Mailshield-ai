@@ -1,64 +1,66 @@
 import streamlit as st
-import requests
-import json
-from app.urgency_analyzer import check_urgency
+import joblib
+import os
+import pandas as pd
 
+# --- Load Model ---
+MODEL_PATH = "models/isolation_forest_model.pkl"
+model = joblib.load(MODEL_PATH)
 
-def check_urgency(text):
-    """Simple keyword-based urgency detector."""
-    urgency_keywords = ['urgent', 'immediately', 'action required', 'asap', 'important', 'verify', 'now']
-    score = sum(word in text.lower() for word in urgency_keywords)
+# --- Extra Security Modules (Bonus Enhancements) ---
+from app.link_checker import analyze_links
+from app.urgency_keywords import check_urgency
+from app.header_parser import inspect_headers
+from app.ai_style_checker import detect_ai_signature
 
-    if score >= 3:
-        return "🚨 High"
-    elif score == 2:
-        return "⚠️ Medium"
-    elif score == 1:
-        return "🟡 Low"
-    else:
-        return "🟢 None"
-
-
-API_URL = "https://mailshield-backend.onrender.com/predict"  # Replace with your actual backend URL
-
-st.set_page_config(page_title="📧 MailShield-AI", layout="wide")
-st.title("📧 MailShield-AI: Email Phishing Detector")
+# --- App Config ---
+st.set_page_config(page_title="MailShield-AI", layout="wide")
+st.title("📩 MailShield-AI: Phishing Detection System")
 st.markdown("""
-Protect your inbox with real-time phishing detection powered by AI.
-Enter the email subject and body below to check for phishing threats.
+Protect your inbox from phishing threats using intelligent email analysis.
 """)
 
-# 📥 Input section with two text areas
+# --- Input Form ---
+st.subheader("📬 Analyze Incoming Email")
 with st.form("email_form"):
-    subject = st.text_input("✉️ Subject")
-    body = st.text_area("📝 Body of the Email")
-    submitted = st.form_submit_button("🔍 Analyze Email")
+    subject = st.text_input("Subject")
+    body = st.text_area("Body", height=150)
+    sender = st.text_input("From Email")
+    receiver = st.text_input("To Email")
+    headers = st.text_area("Headers (Optional)", height=100)
+    submitted = st.form_submit_button("🔍 Analyze")
 
 if submitted:
-    if not subject and not body:
-        st.warning("⚠️ Please enter either a subject or body text.")
-    else:
-        with st.spinner("Analyzing email..."):
-            try:
-                response = requests.post(API_URL, json={"subject": subject, "body": body})
-                result = response.json()
+    full_text = f"{subject} {body}"
+    pred = model.predict([full_text])[0]
+    label = "🛑 Phishing" if pred == -1 else "✅ Legitimate"
 
-                prediction = result.get("prediction")
-                urgency = check_urgency(subject + " " + body)
+    # --- Display Results ---
+    st.markdown(f"### 🔎 Prediction Result: {label}")
 
-                # 🎯 Result display
-                st.subheader("📢 Prediction Result")
-                st.success(f"The email is classified as: **{prediction.upper()}**")
+    # --- Feature Analysis (Bonus Section) ---
+    col1, col2 = st.columns(2)
 
-                st.subheader("⚡ Urgency Analysis")
-                st.info(f"Urgency Level: **{urgency}**")
+    with col1:
+        st.info("🔗 Link Analysis")
+        links = analyze_links(body)
+        st.write(links if links else "No links found.")
 
-                # 📊 Optional: Feature Scores (if backend returns them)
-                if "scores" in result:
-                    st.subheader("📊 Feature Breakdown")
-                    st.json(result["scores"])
+        st.warning("🚨 Urgency Check")
+        urgency = check_urgency(subject + body)
+        st.write("Urgent phrases detected." if urgency else "No urgency cues found.")
 
-            except Exception as e:
-                st.error(f"❌ An error occurred: {str(e)}")
+    with col2:
+        st.info("📤 AI-Style Signature")
+        ai_style = detect_ai_signature(body)
+        st.write(ai_style)
+
+        if headers:
+            st.warning("📑 Suspicious Header Info")
+            parsed = inspect_headers(headers)
+            st.write(parsed)
+
+# --- Footer ---
+st.markdown("---")
 
 
