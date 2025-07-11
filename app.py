@@ -1,54 +1,62 @@
 import streamlit as st
 import joblib
-import json
+import os
+from app.link_checker import count_links
+# Optional: import urgency analyzer if implemented
+try:
+    from app.urgency_analyzer import check_urgency
+    URGENCY_AVAILABLE = True
+except ImportError:
+    URGENCY_AVAILABLE = False
 
-from app.link_checker import analyze_links
-from app.urgency_analyzer import check_urgency
-from app.ai_detector import detect_ai_signature
-from app.header_inspector import inspect_headers
+# Load model and vectorizer paths
+MODEL_PATH = "models/isolation_forest_model.pkl"
+VECTORIZER_PATH = "models/vectorizer.pkl"
 
-# Load model and vectorizer
-model = joblib.load("models/isolation_forest_model.pkl")
-vectorizer = joblib.load("models/vectorizer.pkl")
+# Load model
+@st.cache_resource
+def load_model():
+    if not os.path.exists(MODEL_PATH):
+        st.error("🚨 Model file not found!")
+        return None
+    return joblib.load(MODEL_PATH)
 
-st.set_page_config(page_title="📧 MailShield AI - Phishing Detection", layout="centered")
-st.title("📨 MailShield AI")
-st.markdown("##### Intelligent Email Threat Detection & Analysis")
+model = load_model()
 
-email_input = st.text_area("✉️ Paste the email content here:", height=250)
+# UI
+st.set_page_config(page_title="📧 MailShield-AI", layout="centered")
+st.title("📧 MailShield-AI: Email Phishing Detection")
+st.markdown("Protect yourself from email-based phishing attacks using AI.")
 
-if st.button("🔍 Analyze Email"):
-    if not email_input.strip():
-        st.warning("Please enter some email content.")
+# Input
+subject = st.text_input("Subject", "")
+body = st.text_area("Email Body", "", height=200)
+
+if st.button("🚀 Analyze Email"):
+    if model is None:
+        st.error("❌ Model could not be loaded.")
+    elif not subject and not body:
+        st.warning("Please enter either a subject or body.")
     else:
-        features = vectorizer.transform([email_input])
-        score = model.decision_function(features)[0]
+        text = subject + " " + body
+        prediction = model.predict([text])[0]
+        result = "🔐 Legitimate" if prediction == 1 else "⚠️ Phishing"
 
-        # Individual Modules
-        link_result = analyze_links(email_input)
-        urgency_result = check_urgency(email_input)
-        ai_result = detect_ai_signature(email_input)
-        header_result = inspect_headers(email_input)
+        st.subheader("📊 Prediction Result:")
+        st.success(f"Result: **{result}**")
 
-        # Threat Score Logic
-        flags = 0
-        if link_result['suspicious_links']: flags += 1
-        if urgency_result['urgency_score'] > 1: flags += 1
-        if ai_result['ai_signature_score'] > 0.6: flags += 1
-        if header_result['impersonation_detected']: flags += 1
+        # Show optional features
+        st.subheader("📌 Feature Breakdown:")
+        st.markdown(f"- **Text Length**: {len(text)} characters")
+        st.markdown(f"- **Link Count**: {count_links(text)}")
 
-        threat_score = min(100, round(abs(score) * 50 + flags * 12))
-        st.markdown(f"### ☣️ Threat Score: `{threat_score} / 100`")
-        st.progress(threat_score / 100)
+        # Bonus: Show urgency if analyzer available
+        if URGENCY_AVAILABLE:
+            urgency = check_urgency(text)
+            st.markdown(f"- **Urgency Level**: {urgency}")
 
-        st.subheader("🔗 Link Analysis")
-        st.write(link_result)
+# Footer
+st.markdown("---")
 
-        st.subheader("⚠️ Urgency Indicator")
-        st.write(urgency_result)
 
-        st.subheader("🤖 AI-Generated Content Detector")
-        st.write(ai_result)
 
-        st.subheader("🕵️ Email Header Analysis")
-        st.write(header_result)
