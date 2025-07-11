@@ -1,62 +1,64 @@
 import streamlit as st
-import joblib
-import os
-from app.link_checker import count_links
-# Optional: import urgency analyzer if implemented
-try:
-    from app.urgency_analyzer import check_urgency
-    URGENCY_AVAILABLE = True
-except ImportError:
-    URGENCY_AVAILABLE = False
+import requests
+import json
+from app.urgency_analyzer import check_urgency
 
-# Load model and vectorizer paths
-MODEL_PATH = "models/isolation_forest_model.pkl"
-VECTORIZER_PATH = "models/vectorizer.pkl"
 
-# Load model
-@st.cache_resource
-def load_model():
-    if not os.path.exists(MODEL_PATH):
-        st.error("🚨 Model file not found!")
-        return None
-    return joblib.load(MODEL_PATH)
+def check_urgency(text):
+    """Simple keyword-based urgency detector."""
+    urgency_keywords = ['urgent', 'immediately', 'action required', 'asap', 'important', 'verify', 'now']
+    score = sum(word in text.lower() for word in urgency_keywords)
 
-model = load_model()
-
-# UI
-st.set_page_config(page_title="📧 MailShield-AI", layout="centered")
-st.title("📧 MailShield-AI: Email Phishing Detection")
-st.markdown("Protect yourself from email-based phishing attacks using AI.")
-
-# Input
-subject = st.text_input("Subject", "")
-body = st.text_area("Email Body", "", height=200)
-
-if st.button("🚀 Analyze Email"):
-    if model is None:
-        st.error("❌ Model could not be loaded.")
-    elif not subject and not body:
-        st.warning("Please enter either a subject or body.")
+    if score >= 3:
+        return "🚨 High"
+    elif score == 2:
+        return "⚠️ Medium"
+    elif score == 1:
+        return "🟡 Low"
     else:
-        text = subject + " " + body
-        prediction = model.predict([text])[0]
-        result = "🔐 Legitimate" if prediction == 1 else "⚠️ Phishing"
+        return "🟢 None"
 
-        st.subheader("📊 Prediction Result:")
-        st.success(f"Result: **{result}**")
 
-        # Show optional features
-        st.subheader("📌 Feature Breakdown:")
-        st.markdown(f"- **Text Length**: {len(text)} characters")
-        st.markdown(f"- **Link Count**: {count_links(text)}")
+API_URL = "https://mailshield-backend.onrender.com/predict"  # Replace with your actual backend URL
 
-        # Bonus: Show urgency if analyzer available
-        if URGENCY_AVAILABLE:
-            urgency = check_urgency(text)
-            st.markdown(f"- **Urgency Level**: {urgency}")
+st.set_page_config(page_title="📧 MailShield-AI", layout="wide")
+st.title("📧 MailShield-AI: Email Phishing Detector")
+st.markdown("""
+Protect your inbox with real-time phishing detection powered by AI.
+Enter the email subject and body below to check for phishing threats.
+""")
 
-# Footer
-st.markdown("---")
+# 📥 Input section with two text areas
+with st.form("email_form"):
+    subject = st.text_input("✉️ Subject")
+    body = st.text_area("📝 Body of the Email")
+    submitted = st.form_submit_button("🔍 Analyze Email")
 
+if submitted:
+    if not subject and not body:
+        st.warning("⚠️ Please enter either a subject or body text.")
+    else:
+        with st.spinner("Analyzing email..."):
+            try:
+                response = requests.post(API_URL, json={"subject": subject, "body": body})
+                result = response.json()
+
+                prediction = result.get("prediction")
+                urgency = check_urgency(subject + " " + body)
+
+                # 🎯 Result display
+                st.subheader("📢 Prediction Result")
+                st.success(f"The email is classified as: **{prediction.upper()}**")
+
+                st.subheader("⚡ Urgency Analysis")
+                st.info(f"Urgency Level: **{urgency}**")
+
+                # 📊 Optional: Feature Scores (if backend returns them)
+                if "scores" in result:
+                    st.subheader("📊 Feature Breakdown")
+                    st.json(result["scores"])
+
+            except Exception as e:
+                st.error(f"❌ An error occurred: {str(e)}")
 
 
