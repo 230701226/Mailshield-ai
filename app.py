@@ -3,25 +3,14 @@ import joblib
 import os
 import re
 import numpy as np
+import pandas as pd
 
-from sklearn.base import BaseEstimator, TransformerMixin
-
-# ===== Custom Transformers (MUST be defined before model load) =====
-class TextLengthExtractor(BaseEstimator, TransformerMixin):
-    def fit(self, X, y=None): return self
-    def transform(self, X): return np.array([[len(text)] for text in X])
-
-class LinkCountExtractor(BaseEstimator, TransformerMixin):
-    def fit(self, X, y=None): return self
-    def transform(self, X): return np.array([[len(re.findall(r'http[s]?://', text))] for text in X])
-
-# ===== Bonus: Urgency Checker =====
+# === Custom Feature Utilities === #
 def check_urgency(text):
     urgent_keywords = ['urgent', 'immediately', 'asap', 'action required', 'important', 'response needed']
     text_lower = text.lower()
     return any(keyword in text_lower for keyword in urgent_keywords)
 
-# ===== Bonus: Header Parser =====
 def extract_email_headers(email_text):
     headers = {}
     for line in email_text.split('\n'):
@@ -30,14 +19,19 @@ def extract_email_headers(email_text):
             headers[key.strip()] = value.strip()
     return headers
 
-# ===== Load Model (after defining custom classes) =====
+# === Load Model === #
 MODEL_PATH = "models/isolation_forest_model.pkl"
 model = joblib.load(MODEL_PATH)
 
-# ===== Streamlit UI =====
+# === Streamlit UI === #
 st.set_page_config(page_title="MailShield-AI", layout="wide")
 
-st.markdown("<h1 style='text-align: center; color: #008080;'>📧 MailShield-AI: Phishing Email Detection</h1>", unsafe_allow_html=True)
+st.markdown(
+    """
+    <h1 style='text-align: center; color: #008080;'>📧 MailShield-AI: Phishing Email Detection</h1>
+    """, unsafe_allow_html=True
+)
+
 st.markdown("---")
 
 col1, col2 = st.columns([3, 2])
@@ -47,16 +41,16 @@ with col1:
     subject = st.text_input("✉️ Subject")
     body = st.text_area("📝 Email Body", height=250)
 
-    if st.button("🔎 Analyze"):
-        full_text = subject + " " + body
+    if st.button("🔍 Analyze"):
+        with st.spinner("Analyzing..."):
+        # ... earlier logic
+            features = vectorizer.transform([input_text])
+            prediction = model.predict(features)
 
-        # Prediction
-       prediction = model.predict(features)
-       label = "Phishing 🛑" if prediction[0] == 1 else "Legitimate ✅"
-
-
-        st.markdown(f"<h3 style='color: {result_color};'>Prediction: {result_label}</h3>", unsafe_allow_html=True)
-
+            if prediction[0] == 1:
+                st.markdown("### 🛑 **Prediction: Phishing** ❌", unsafe_allow_html=True)
+            else:
+                st.markdown("### ✅ **Prediction: Legitimate** ✅", unsafe_allow_html=True)
         # Urgency
         urgent = check_urgency(full_text)
         urgency_note = "⚠️ Urgent Language Detected" if urgent else "✅ No Urgency Detected"
