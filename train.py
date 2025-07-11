@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import FunctionTransformer
+from app.feature_extractors import TextLengthExtractor, LinkCountExtractor
+
 
 # Load dataset
 print("📥 Loading dataset...")
