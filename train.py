@@ -1,72 +1,45 @@
-# train.py
-
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 import joblib
 import os
-from sklearn.ensemble import IsolationForest
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.base import BaseEstimator, TransformerMixin
-import numpy as np
-import re
 
-# ==== Paths ====
-DATA_PATH = "data/Updated_MailShield_Email_Dataset.csv"
+# Paths
 MODEL_PATH = "models/isolation_forest_model.pkl"
 VECTORIZER_PATH = "models/vectorizer.pkl"
+DATA_PATH = "data/Updated_MailShield_Email_Dataset.csv"
 
-# ==== Custom Feature: Email Text Length ====
-class TextLengthExtractor(BaseEstimator, TransformerMixin):
-    def fit(self, X, y=None):
-        return self
+# Step 1: Load dataset
+print("📥 Loading dataset...")
+df = pd.read_csv(DATA_PATH)
 
-    def transform(self, X):
-        return np.array([[len(text)] for text in X])
+# Step 2: Combine subject + body into a single text column
+df["Subject"] = df["Subject"].fillna("")
+df["Body"] = df["Body"].fillna("")
+df["text"] = df["Subject"] + " " + df["Body"]
 
-class LinkCountExtractor(BaseEstimator, TransformerMixin):
-    def fit(self, X, y=None):
-        return self
+# Step 3: Encode labels (legitimate=0, phishing=1)
+df["label"] = df["label"].map({"legitimate": 0, "phishing": 1})
 
-    def transform(self, X):
-        return np.array([[len(re.findall(r'http[s]?://', text))] for text in X])# ==== Main training function ====
-def main():
-    print("📥 Loading dataset...")
-    df = pd.read_csv(DATA_PATH)
+# Step 4: TF-IDF vectorization
+print("🔠 Vectorizing text...")
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(df["text"])
+y = df["label"]
 
-    # Validate required columns
-    if 'subject' not in df.columns or 'body' not in df.columns or 'label' not in df.columns:
-        raise ValueError("❗ Columns 'subject', 'body', or 'label' not found in dataset")
+# Step 5: Split and train the model
+print("🧠 Training Random Forest model...")
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
 
-    # Combine subject and body into one text field
-    df['text'] = df['subject'].fillna('') + ' ' + df['body'].fillna('')
-    X = df['text']
+# Step 6: Save model and vectorizer
+print("💾 Saving model and vectorizer...")
+os.makedirs("models", exist_ok=True)
+joblib.dump(model, MODEL_PATH)
+joblib.dump(vectorizer, VECTORIZER_PATH)
 
-    print("🔧 Building feature pipeline...")
-    features = FeatureUnion([
-        ('tfidf', TfidfVectorizer(stop_words='english')),
-        ('length', TextLengthExtractor()),
-        ('links', LinkCountExtractor())
-    ])
-
-    print("🎯 Training model...")
-    pipeline = Pipeline([
-        ('features', features),
-        ('clf', IsolationForest(n_estimators=100, contamination=0.1, random_state=42))
-    ])
-
-    pipeline.fit(X)
-
-    # Save the pipeline (model + features)
-    print(f"💾 Saving model to {MODEL_PATH}")
-    joblib.dump(pipeline, MODEL_PATH)
-
-    # Optionally, also save just the TF-IDF vectorizer
-    tfidf = pipeline.named_steps['features'].transformer_list[0][1]
-    print(f"💾 Saving TF-IDF vectorizer to {VECTORIZER_PATH}")
-    joblib.dump(tfidf, VECTORIZER_PATH)
-
-    print("✅ Training complete.")
-
-# ==== Run ====
-if __name__ == "__main__":
-    main()
+print("✅ Training complete. Model saved to:")
+print("   →", MODEL_PATH)
+print("   →", VECTORIZER_PATH)
