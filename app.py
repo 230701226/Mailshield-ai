@@ -51,9 +51,9 @@ with col1:
         full_text = subject + " " + body
 
         # Prediction
-        prediction = model.predict([full_text])[0]
-        result_label = "Phishing 🛑" if prediction == -1 else "Legitimate ✅"
-        result_color = "red" if prediction == -1 else "green"
+       prediction = model.predict(features)
+       label = "Phishing 🛑" if prediction[0] == 1 else "Legitimate ✅"
+
 
         st.markdown(f"<h3 style='color: {result_color};'>Prediction: {result_label}</h3>", unsafe_allow_html=True)
 
