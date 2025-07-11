@@ -1,32 +1,75 @@
 import streamlit as st
 import joblib
 import os
-import sys
+import re
+import numpy as np
+import pandas as pd
 
-# Safe dynamic import
-try:
-    from app.urgency_keywords import check_urgency
-except ImportError:
-    def check_urgency(text):
-        return "⚠️ Urgency check unavailable."
+# === Custom Feature Utilities === #
+def check_urgency(text):
+    urgent_keywords = ['urgent', 'immediately', 'asap', 'action required', 'important', 'response needed']
+    text_lower = text.lower()
+    return any(keyword in text_lower for keyword in urgent_keywords)
 
+def extract_email_headers(email_text):
+    headers = {}
+    for line in email_text.split('\n'):
+        if ':' in line:
+            key, value = line.split(':', 1)
+            headers[key.strip()] = value.strip()
+    return headers
+
+# === Load Model === #
 MODEL_PATH = "models/isolation_forest_model.pkl"
+model = joblib.load(MODEL_PATH)
 
-st.title("📧 MailShield AI – Email Phishing Detector")
-input_text = st.text_area("Paste an email message here:")
+# === Streamlit UI === #
+st.set_page_config(page_title="MailShield-AI", layout="wide")
 
-if st.button("Analyze Email"):
-    if not input_text.strip():
-        st.warning("Please enter some email text.")
-    else:
-        try:
-            model = joblib.load(MODEL_PATH)
-            prediction = model.predict([input_text])[0]
-            label = "Phishing" if prediction == -1 else "Legitimate"
-            st.success(f"🛡️ Prediction: **{label}**")
-        except Exception as e:
-            st.error(f"❌ Failed to load model: {e}")
-        
-        # Bonus check
-        urgency = check_urgency(input_text)
-        st.info(f"Urgency Score: {urgency}")
+st.markdown(
+    """
+    <h1 style='text-align: center; color: #008080;'>📧 MailShield-AI: Phishing Email Detection</h1>
+    """, unsafe_allow_html=True
+)
+
+st.markdown("---")
+
+col1, col2 = st.columns([3, 2])
+
+with col1:
+    st.subheader("🔍 Enter Email Content Below")
+    subject = st.text_input("✉️ Subject")
+    body = st.text_area("📝 Email Body", height=250)
+
+    if st.button("🔎 Analyze"):
+        full_text = subject + " " + body
+
+        # Prediction
+        prediction = model.predict([full_text])[0]
+        result_label = "Phishing 🛑" if prediction == -1 else "Legitimate ✅"
+        result_color = "red" if prediction == -1 else "green"
+
+        st.markdown(f"<h3 style='color: {result_color};'>Prediction: {result_label}</h3>", unsafe_allow_html=True)
+
+        # Urgency
+        urgent = check_urgency(full_text)
+        urgency_note = "⚠️ Urgent Language Detected" if urgent else "✅ No Urgency Detected"
+        urgency_color = "orange" if urgent else "gray"
+        st.markdown(f"<h4 style='color: {urgency_color};'>{urgency_note}</h4>", unsafe_allow_html=True)
+
+with col2:
+    st.subheader("📌 Email Header Insights (Optional)")
+    raw_headers = st.text_area("Paste full raw headers here", height=250)
+    if raw_headers:
+        headers = extract_email_headers(raw_headers)
+        if headers:
+            st.write("Parsed Headers:")
+            st.json(headers)
+        else:
+            st.warning("⚠️ Could not parse headers properly.")
+
+st.markdown("---")
+st.markdown(
+    "<small>🚀 Powered by Isolation Forest, TF-IDF, and Custom Feature Extractors | Streamlit App</small>",
+    unsafe_allow_html=True
+)
