@@ -1,5 +1,6 @@
- Internship Info
- # DATA SCIENCE INTERN
+#END-TO-END DATA SCIENCE PROJECT
+
+# DATA SCIENCE INTERN
  
  Project: MailShield-AI: Phishing Email Detection
  
