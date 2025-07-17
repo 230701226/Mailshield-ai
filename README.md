@@ -1,8 +1,14 @@
  Internship Info
+ # DATA SCIENCE INTERN
+ 
  Project: MailShield-AI: Phishing Email Detection
+ 
  Company: Codtech IT Solutions Pvt. Ltd.
+ 
  Name: POOJA AK
+ 
  Duration: 4 weeks
+ 
  Mentor: Neela santhosh
 
  Goal: Build a working ML-based email classifier with clear output via Streamlit.
